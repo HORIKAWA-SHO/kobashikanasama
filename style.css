@@ -79,3 +79,10 @@ textarea#notes:focus { outline: none; border-color: #f9a8d4; box-shadow: 0 0 0 3
   header h1 { font-size: 1.6rem; }
   .calendar .cell { min-height: 92px; }
 }
+
+/* Dinner menu */
+ul.menu { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
+ul.menu li { display: grid; grid-template-columns: 110px 1fr auto; align-items: center; gap: 10px; padding: 10px 12px; background: rgba(255,255,255,0.7); border: 1px solid var(--border); border-radius: 12px; }
+.menu-label { font-weight: 700; color: var(--success); }
+.menu-name { font-weight: 600; }
+.menu-macros { color: var(--muted); font-size: .9rem; }

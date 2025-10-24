@@ -511,7 +511,184 @@ function renderStreaks() {
   if (sm) sm.textContent = `${sM}`;
 }
 
-// メモ機能は削除
+// メモ機能は削除}
+
+// 追加: 夕食メニュー提案（曜日ごとに日替わり）
+// 方針:
+// - 合計500kcal以内、脂質10〜15g目安
+// - タンパク質は 魚/貝/鶏/大豆 を優先
+// - 炭水化物1、タンパク質メイン1、副菜1〜2
+// - 調理は焼く・蒸す・茹でる・レンジ等の低カロリー優先
+const DINNER = {
+  carbs: [
+    { name: '雑穀ごはん 100g', kcal: 165, fat: 0.8 },
+    { name: '麦ごはん 100g', kcal: 165, fat: 0.6 },
+    { name: '玄米ごはん 100g', kcal: 168, fat: 1.0 },
+    { name: 'さつまいも 小1本(120g) 蒸し', kcal: 180, fat: 0.3 },
+    { name: 'オートミール粥(乾30g)', kcal: 115, fat: 2.2 },
+    { name: '白ごはん 80g', kcal: 134, fat: 0.3 },
+    { name: '白ごはん 120g', kcal: 201, fat: 0.5 },
+    { name: 'うどん(茹で 200g)', kcal: 210, fat: 0.8 },
+    { name: 'そば(茹で 180g)', kcal: 240, fat: 1.0 },
+    { name: '玄米おにぎり 小(80g)', kcal: 140, fat: 0.8 },
+    { name: '雑穀ごはん 90g', kcal: 148, fat: 0.7 },
+    { name: 'もち麦おにぎり 小(100g)', kcal: 170, fat: 0.8 },
+    { name: 'じゃがいも 中1個(150g) 茹で', kcal: 115, fat: 0.1 },
+  ],
+  proteinPriority: [ // 優先タンパク質
+    { name: '鮭の塩こうじ焼き(切り身80g/トースター)', kcal: 180, fat: 9.0 },
+    { name: '鶏むねの梅しそ蒸し(100g/レンジ)', kcal: 150, fat: 3.0 },
+    { name: '鯖の生姜煮(缶＋生姜/80g)', kcal: 190, fat: 10.0 },
+    { name: 'あさりの酒蒸し(150g)', kcal: 110, fat: 2.0 },
+    { name: '冷奴(木綿150g)＋薬味', kcal: 150, fat: 9.0 },
+  ],
+  proteinOthers: [
+    { name: '豚ヒレの塩胡椒ソテー(80g/ノンオイル)', kcal: 180, fat: 7.0 },
+    { name: '卵の野菜たっぷりオムレツ(卵1個+野菜/少量油)', kcal: 170, fat: 11.0 },
+    { name: 'ツナ水煮のヘルシーサラダ', kcal: 130, fat: 2.0 },
+  ],
+  sides: [
+    { name: 'ブロッコリーのレンジ蒸し(100g)+塩', kcal: 35, fat: 0.4 },
+    { name: '小松菜とえのきのおひたし', kcal: 40, fat: 0.5 },
+    { name: 'キャベツとわかめの味噌汁', kcal: 60, fat: 1.5 },
+    { name: 'トマトときゅうりのサラダ(ノンオイル)', kcal: 45, fat: 0.4 },
+    { name: 'きのこのレンジマリネ(ノンオイル)', kcal: 50, fat: 0.6 },
+    { name: '切り干し大根のさっぱり和え', kcal: 70, fat: 0.8 },
+    { name: '豆腐とわかめのスープ', kcal: 60, fat: 2.0 },
+    { name: '具だくさん味噌汁(豆腐/わかめ)', kcal: 80, fat: 3.0 },
+    { name: 'ほうれん草のごま和え(小)', kcal: 80, fat: 5.0 },
+    { name: 'きゅうりの塩昆布和え', kcal: 30, fat: 0.2 },
+    { name: '大根とツナ水煮のサラダ(ノンオイル)', kcal: 90, fat: 1.0 },
+    { name: 'カリフラワーのピクルス', kcal: 35, fat: 0.1 },
+    { name: 'もずく酢', kcal: 10, fat: 0.0 },
+  ],
+  notes: [
+    '味付けは塩・酢・柑橘・香味で満足感UP。',
+    '油は最小限。フッ素加工やオーブン/レンジを活用。',
+    'よく噛んでゆっくり食べると満腹中枢が働きます。',
+    '汁物を先に飲むと食べ過ぎ防止に。',
+  ]
+};
+
+function weekdayIndex(d = new Date()) { // 0:日〜6:土
+  return d.getDay();
+}
+
+function pickFromList(list, seed) {
+  return seededPick(list, seed);
+}
+
+function buildDinnerForDay(d = new Date()) {
+  const seed = `${dateKey(d)}-${weekdayIndex(d)}`;
+  // 候補集合を準備（タンパク質は優先→その他の順）
+  const carbs = DINNER.carbs.slice();
+  const proteins = DINNER.proteinPriority.concat(DINNER.proteinOthers);
+  const sides = DINNER.sides.slice();
+
+  // 副菜の全組み合わせ（1品 or 2品、同一は不可）
+  const sideCombos = [];
+  for (let i = 0; i < sides.length; i++) sideCombos.push([sides[i]]);
+  for (let i = 0; i < sides.length; i++) {
+    for (let j = i + 1; j < sides.length; j++) {
+      sideCombos.push([sides[i], sides[j]]);
+    }
+  }
+
+  // スコアリング関数（500±20kcalを最優先）
+  function chooseBest(candidates) {
+    if (candidates.length === 0) return null;
+    const TARGET = 500;
+    const TOL = 20; // 500±20
+    // まずカロリーが範囲内の候補を抽出
+    const inWindow = candidates.filter(c => Math.abs(c.totalKcal - TARGET) <= TOL);
+    const windowFatPref = inWindow.filter(c => c.totalFat >= 0 && c.totalFat <= 15);
+    let pool = windowFatPref.length ? windowFatPref : inWindow;
+    if (pool.length) {
+      pool.sort((a,b)=> {
+        const dk = Math.abs(a.totalKcal - TARGET) - Math.abs(b.totalKcal - TARGET);
+        if (dk !== 0) return dk;
+        // 脂質レンジに近い方を優先
+        const df = (Math.abs((a.totalFat>=0&&a.totalFat<=15)?0:(a.totalFat-7.5)) - Math.abs((b.totalFat>=0&&b.totalFat<=15)?0:(b.totalFat-7.5)));
+        if (df !== 0) return df;
+        // 優先タンパク質を優先
+        if (a.proteinPriority !== b.proteinPriority) return a.proteinPriority ? -1 : 1;
+        return 0;
+      });
+      return pool[0];
+    }
+    // 範囲外の場合は従来の方針で500に近いもの（下側優先→超過最小）
+    const inFat = candidates.filter(c => c.totalFat >= 0 && c.totalFat <= 15);
+    pool = inFat.length ? inFat : candidates;
+    const under = pool.filter(c => c.totalKcal <= TARGET);
+    if (under.length) {
+      under.sort((a,b)=> {
+        const dk = (TARGET - a.totalKcal) - (TARGET - b.totalKcal);
+        if (dk !== 0) return dk;
+        if (a.proteinPriority !== b.proteinPriority) return a.proteinPriority ? -1 : 1;
+        return 0;
+      });
+      return under[0];
+    }
+    pool.sort((a,b)=> {
+      const dk = a.totalKcal - b.totalKcal;
+      if (dk !== 0) return dk;
+      if (a.proteinPriority !== b.proteinPriority) return a.proteinPriority ? -1 : 1;
+      return 0;
+    });
+    return pool[0];
+  }
+
+  const candidates = [];
+  for (const c of carbs) {
+    for (let pIdx = 0; pIdx < proteins.length; pIdx++) {
+      const p = proteins[pIdx];
+      for (const sc of sideCombos) {
+        const items = [c, p, ...sc];
+        const totalKcal = items.reduce((a,b)=>a+b.kcal,0);
+        const totalFat = items.reduce((a,b)=>a+b.fat,0);
+        // 総量が明らかに遠いものはスキップ（上限600程度のバッファ）
+        if (totalKcal > 600) continue;
+        candidates.push({ items, totalKcal, totalFat, proteinPriority: pIdx < DINNER.proteinPriority.length });
+      }
+    }
+  }
+
+  // タンパク質は優先枠を好むバイアス（同スコア時）
+  // 選別後に同値タイはseedで安定擬似ランダム
+  let best = chooseBest(candidates);
+  if (!best) {
+    // フォールバック: ランダムに近い形で1セット
+    const carb = pickFromList(DINNER.carbs, seed + '-c');
+    const protein = pickFromList(DINNER.proteinPriority.concat(DINNER.proteinOthers), seed + '-p');
+    const side1 = pickFromList(DINNER.sides, seed + '-s1');
+    const side2 = pickFromList(DINNER.sides.filter(s=>s.name!==side1.name), seed + '-s2');
+    const items = [carb, protein, side1, side2];
+    const totalKcal = items.reduce((a,b)=>a+b.kcal,0);
+    const totalFat = items.reduce((a,b)=>a+b.fat,0);
+    best = { items, totalKcal, totalFat };
+  }
+
+  return { ...best, note: pickFromList(DINNER.notes, seed + '-n') };
+}
+
+function renderDinner() {
+  const menuEl = document.getElementById('dinner-menu');
+  const kcalEl = document.getElementById('dinner-kcal');
+  const fatEl = document.getElementById('dinner-fat');
+  const noteEl = document.getElementById('dinner-note');
+  if (!menuEl || !kcalEl || !fatEl || !noteEl) return;
+  const plan = buildDinnerForDay(new Date());
+  menuEl.innerHTML = '';
+  plan.items.forEach((it, idx) => {
+    const li = document.createElement('li');
+    const label = idx === 0 ? '炭水化物' : (idx === 1 ? 'タンパク質メイン' : '副菜');
+    li.innerHTML = `<span class="menu-label">${label}</span><span class="menu-name">${it.name}</span><span class="menu-macros">${it.kcal}kcal / 脂質${it.fat}g</span>`;
+    menuEl.appendChild(li);
+  });
+  kcalEl.textContent = `${Math.round(plan.totalKcal)} kcal`;
+  fatEl.textContent = `${plan.totalFat.toFixed(1)} g`;
+  noteEl.textContent = plan.note;
+}
 
 // 初期化
 function init() {
@@ -528,12 +705,13 @@ function init() {
   bindGoalsForm();
   renderGoalsPanel();
   renderStreaks();
-
+  
   const now = new Date();
   currentYear = now.getFullYear();
   currentMonth = now.getMonth();
   bindCalendarNav();
   renderCalendar();
+  renderDinner();
 }
 
 document.addEventListener('DOMContentLoaded', init);

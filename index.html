@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>小橋佳奈様 専用ダイエットサポート</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="container">
+    <h1>小橋佳奈様 専用ダイエットサポート</h1>
+    <p class="sub">毎日の小さな積み重ねを見える化しましょう</p>
+  </header>
+
+  <main class="container">
+    <section class="card" id="section-affirmation">
+      <h2>今日のアファメーション</h2>
+      <p id="affirmation-message" class="emphasis"></p>
+    </section>
+
+    <!-- ① 今日の花言葉（日替わり表示・50パターン） -->
+    <section class="card" id="section-flower">
+      <h2>今日の花言葉</h2>
+      <p id="flower-message" class="emphasis"></p>
+    </section>
+
+    <!-- ② 体重記録（当日＆前日比） -->
+    <section class="card" id="section-weight">
+      <h2>朝の体重測定</h2>
+      <form id="weight-form">
+        <div class="row">
+          <label for="weight-input">体重(kg)</label>
+          <input type="number" step="0.1" id="weight-input" placeholder="例: 52.3" required />
+          <button type="submit">保存</button>
+        </div>
+      </form>
+      <div class="info">
+        <p>今日: <span id="today-weight">-</span></p>
+        <p>前日比: <span id="delta-weight">-</span></p>
+      </div>
+    </section>
+
+    <section class="card" id="section-water">
+      <h2>水分トラッカー</h2>
+      <div class="row">
+        <button id="water-decr" aria-label="減らす">－</button>
+        <div id="water-count" aria-live="polite">0/8 杯</div>
+        <button id="water-incr" aria-label="増やす">＋</button>
+      </div>
+      <div class="progress"><div class="bar" id="water-bar" style="width:0%"></div></div>
+      <p class="sub" id="water-guideline">目安: -</p>
+    </section>
+
+    <section class="card" id="section-fruit">
+      <h2>果物トラッカー（200g目標）</h2>
+      <form id="fruit-form">
+        <div class="row">
+          <label for="fruit-grams">摂取量(g)</label>
+          <input type="number" step="10" id="fruit-grams" placeholder="例: 150" />
+          <button type="submit">保存</button>
+        </div>
+      </form>
+      <div class="progress"><div class="bar" id="fruit-bar" style="width:0%"></div></div>
+      <p class="sub" id="fruit-status">0/200 g</p>
+    </section>
+
+    <!-- ③ 朝のノルマ チェックリスト -->
+    <section class="card" id="section-morning">
+      <h2>朝のノルマ</h2>
+      <ul class="checklist">
+        <li>
+          <label>
+            <input type="checkbox" data-morning="water" />
+            起床後のコップ１杯の水
+          </label>
+        </li>
+        <li>
+          <label>
+            <input type="checkbox" data-morning="fruit" />
+            果物を食べる（200g目指す）
+          </label>
+        </li>
+        <li>
+          <label>
+            <input type="checkbox" data-morning="breath" />
+            簡単なストレッチ or 深呼吸
+          </label>
+        </li>
+        <li>
+          <label>
+            <input type="checkbox" data-morning="sun" />
+            陽の光を浴びる
+          </label>
+        </li>
+      </ul>
+    </section>
+
+    <!-- ④ 本日の運動 チェックリスト -->
+    <section class="card" id="section-exercise">
+      <h2>本日の運動</h2>
+      <ul class="checklist">
+        <li>
+          <label>
+            <input type="checkbox" data-exercise="stretch" />
+            ストレッチ
+          </label>
+        </li>
+        <li>
+          <label>
+            <input type="checkbox" data-exercise="squat" />
+            スクワット
+          </label>
+        </li>
+        <li>
+          <label>
+            <input type="checkbox" data-exercise="abs" />
+            腹筋
+          </label>
+        </li>
+      </ul>
+      <p id="exercise-all-done" class="success hidden">
+        今日もよく頑張った自分、現状維持は衰退の始まり、明日は今日よりも１回でも１分でも長い運動習慣を！
+      </p>
+    </section>
+
+    <section class="card" id="section-goals">
+      <h2>今月の目標</h2>
+      <form id="goals-form">
+        <div class="row">
+          <label for="goal-weight">目標体重(kg)</label>
+          <input type="number" step="0.1" id="goal-weight" placeholder="例: 50.0" />
+          <label for="goal-ex-days">目標運動日数</label>
+          <input type="number" step="1" id="goal-ex-days" placeholder="例: 20" />
+          <button type="submit">保存</button>
+        </div>
+      </form>
+      <div class="info">
+        <p>最新体重: <span id="latest-weight">-</span>（目標まで <span id="to-goal-weight">-</span>）</p>
+        <p>今月の運動達成: <span id="exercise-days">0</span>日 / <span id="goal-ex-days-view">-</span>日</p>
+      </div>
+      <div class="progress"><div class="bar" id="exdays-bar" style="width:0%"></div></div>
+    </section>
+
+    <section class="card" id="section-streaks">
+      <h2>連続達成記録</h2>
+      <div class="info">
+        <p>朝のノルマ連続: <span id="streak-morning">0</span>日</p>
+        <p>運動連続: <span id="streak-exercise">0</span>日</p>
+      </div>
+    </section>
+
+
+    <!-- ⑤ カレンダー（月表示・体重・運動マーク） -->
+    <section class="card" id="section-calendar">
+      <div class="cal-header">
+        <h2>カレンダー</h2>
+        <div class="cal-nav">
+          <button id="prev-month" aria-label="前の月">◀</button>
+          <span id="cal-title"></span>
+          <button id="next-month" aria-label="次の月">▶</button>
+        </div>
+      </div>
+      <div id="calendar" class="calendar"></div>
+      <p class="note">※運動マークは本日の運動項目がすべて完了した日に表示されます</p>
+    </section>
+  </main>
+
+  <footer class="container footer">
+    <small>データはこの端末のブラウザにのみ保存されます（localStorage）</small>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

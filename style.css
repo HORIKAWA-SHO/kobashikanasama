@@ -81,21 +81,6 @@ textarea#notes:focus { outline: none; border-color: #f9a8d4; box-shadow: 0 0 0 3
 .calendar .mark { color: var(--accent); font-size: 1rem; }
 .calendar .dim { opacity: .35; }
 
-/* 花の装飾 */
-.flower-decor { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-.flower-decor .f1, .flower-decor .f2, .flower-decor .f3 {
-  position: absolute; filter: drop-shadow(0 8px 18px rgba(0,0,0,0.12));
-  opacity: .22; transform: translate3d(0,0,0);
-  font-size: clamp(24px, 8vw, 80px);
-}
-.flower-decor .f1 { left: 4%; top: 6%; animation: float1 12s ease-in-out infinite; }
-.flower-decor .f2 { right: 6%; bottom: 8%; animation: float2 14s ease-in-out infinite; }
-.flower-decor .f3 { left: 50%; top: 72%; transform: translateX(-50%); animation: float3 16s ease-in-out infinite; }
-
-@keyframes float1 { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(8px) } }
-@keyframes float2 { 0%,100%{ transform: translateY(0) rotate(0deg) } 50%{ transform: translateY(-10px) rotate(2deg) } }
-@keyframes float3 { 0%,100%{ transform: translate(-50%,0) } 50%{ transform: translate(-50%,6px) } }
-
 @media (min-width: 720px) {
   header h1 { font-size: clamp(1.4rem, 2vw, 1.8rem); }
   .calendar .cell { min-height: 92px; }
